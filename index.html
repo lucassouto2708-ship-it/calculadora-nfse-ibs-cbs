@@ -242,6 +242,69 @@
     }
     footer img { height: 22px; vertical-align: middle; margin-right: 6px; }
 
+    /* ---------- Direction-aware tabs (adaptado do Cult UI) ---------- */
+    .sr-only {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0);
+      white-space: nowrap; border: 0;
+    }
+    .campo-ano { margin-bottom: 16px; }
+    .rotulo { font-size: 0.85rem; font-weight: 600; color: var(--musgo); }
+    .abas-ano {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--floresta);
+      background: #fff;
+    }
+    .abas-ano button {
+      position: relative;
+      z-index: 1;
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--floresta);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.25;
+      transition: color .25s ease;
+    }
+    .abas-ano button small {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--suave);
+      transition: color .25s ease;
+    }
+    .abas-ano button[aria-checked="true"] { color: var(--papel); }
+    .abas-ano button[aria-checked="true"] small { color: var(--salvia); }
+    .abas-ano button:focus-visible { outline: 2px solid var(--limao); outline-offset: -4px; }
+    .abas-indicador {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      width: 50%;
+      background: var(--floresta);
+      transition: transform .38s cubic-bezier(.22, 1, .36, 1);
+    }
+    .abas-ano[data-ativo="1"] .abas-indicador { transform: translateX(100%); }
+
+    /* Nota troca com deslize na direção da aba escolhida */
+    .note.deslizar-dir { animation: deslizarDir .38s cubic-bezier(.22, 1, .36, 1); }
+    .note.deslizar-esq { animation: deslizarEsq .38s cubic-bezier(.22, 1, .36, 1); }
+    @keyframes deslizarDir { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+    @keyframes deslizarEsq { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .abas-indicador, .abas-ano button, .abas-ano button small { transition: none; }
+      .note.deslizar-dir, .note.deslizar-esq { animation: none; }
+    }
+
     /* ---------- Ações / PDF ---------- */
     .acoes {
       display: flex;
@@ -343,14 +406,19 @@
     <div class="container">
       <div class="entrada">
       <div class="section-title">Dados do Serviço</div>
-      <div class="grid">
-        <div class="field">
-          <label for="ano">Ano de Competência</label>
-          <select id="ano">
-            <option value="2027" selected>2027 em diante (Sem PIS/COFINS)</option>
-            <option value="2026">2026 (Ano-Teste com PIS/COFINS)</option>
-          </select>
+      <div class="field campo-ano">
+        <span class="rotulo" id="rotuloAno">Ano de Competência</span>
+        <div class="abas-ano" role="radiogroup" aria-labelledby="rotuloAno">
+          <span class="abas-indicador" aria-hidden="true"></span>
+          <button type="button" role="radio" data-valor="2027">2027 em diante <small>Sem PIS/COFINS</small></button>
+          <button type="button" role="radio" data-valor="2026">2026 <small>Ano-teste com PIS/COFINS</small></button>
         </div>
+        <select id="ano" class="sr-only" tabindex="-1" aria-hidden="true">
+          <option value="2027" selected>2027 em diante (Sem PIS/COFINS)</option>
+          <option value="2026">2026 (Ano-Teste com PIS/COFINS)</option>
+        </select>
+      </div>
+      <div class="grid">
 
         <div class="field">
           <label for="valorServico">Valor do Serviço (R$)</label>
@@ -619,6 +687,120 @@
       document.getElementById("btnPdf").addEventListener("click", () => {
         montarRelatorio();
         window.print();
+      });
+    })();
+  </script>
+
+  <script>
+    // Componentes adaptados do Cult UI (Direction-Aware Tabs e Animated Number).
+    // Apenas apresentação: o cálculo continua no script original, intocado.
+    (function () {
+      const reduzMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* ---------- Direction-Aware Tabs: ano de competência ---------- */
+      const selAno = document.getElementById("ano");
+      const abas = document.querySelector(".abas-ano");
+      const botoes = Array.from(abas.querySelectorAll("button"));
+      const nota = document.getElementById("notaRodape");
+
+      function marcar(valor) {
+        botoes.forEach((b, i) => {
+          const ativo = b.dataset.valor === valor;
+          b.setAttribute("aria-checked", ativo ? "true" : "false");
+          b.tabIndex = ativo ? 0 : -1;
+          if (ativo) abas.dataset.ativo = String(i);
+        });
+      }
+
+      function escolher(botao) {
+        const valor = botao.dataset.valor;
+        if (valor === selAno.value) return;
+        const de = botoes.findIndex((b) => b.dataset.valor === selAno.value);
+        const para = botoes.indexOf(botao);
+        selAno.value = valor;
+        marcar(valor);
+        selAno.dispatchEvent(new Event("change"));
+        if (!reduzMovimento) {
+          nota.classList.remove("deslizar-dir", "deslizar-esq");
+          void nota.offsetWidth;
+          nota.classList.add(para > de ? "deslizar-dir" : "deslizar-esq");
+        }
+      }
+
+      botoes.forEach((b) => {
+        b.addEventListener("click", () => escolher(b));
+        b.addEventListener("keydown", (e) => {
+          if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+          e.preventDefault();
+          const i = botoes.indexOf(b);
+          const passo = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1;
+          const prox = botoes[(i + passo + botoes.length) % botoes.length];
+          prox.focus();
+          escolher(prox);
+        });
+      });
+      selAno.addEventListener("change", () => marcar(selAno.value));
+      marcar(selAno.value);
+
+      /* ---------- Animated Number: valores do resultado ---------- */
+      if (reduzMovimento || !("MutationObserver" in window)) return;
+
+      const ids = ["resIss", "resPisCofins", "resBase", "resCbs", "resIbsUf", "resIbsMun", "resTotalReforma"];
+      const fmt = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const ler = (txt) => {
+        const n = parseFloat(txt.replace(/[^\d,-]/g, "").replace(",", "."));
+        return isNaN(n) ? 0 : n;
+      };
+      const suavizar = (t) => 1 - Math.pow(1 - t, 4);
+      const DURACAO = 650;
+      const estados = new Map();
+
+      function animar(el, de, textoFinal) {
+        const st = estados.get(el);
+        const para = ler(textoFinal);
+        st.final = textoFinal;
+        cancelAnimationFrame(st.raf);
+        if (Math.abs(para - de) < 0.005) {
+          st.atual = para;
+          el.firstChild.data = textoFinal;
+          return;
+        }
+        const inicio = performance.now();
+        const passo = (agora) => {
+          const t = Math.min(1, (agora - inicio) / DURACAO);
+          st.atual = de + (para - de) * suavizar(t);
+          // Escrita via nó de texto (characterData) para não disparar o observador.
+          el.firstChild.data = t < 1 ? fmt(st.atual) : textoFinal;
+          if (t < 1) st.raf = requestAnimationFrame(passo);
+        };
+        el.firstChild.data = fmt(de);
+        st.raf = requestAnimationFrame(passo);
+      }
+
+      const observador = new MutationObserver((registros) => {
+        const vistos = new Set();
+        registros.forEach((r) => vistos.add(r.target));
+        vistos.forEach((el) => {
+          const st = estados.get(el);
+          if (st && el.firstChild) animar(el, st.atual, el.textContent);
+        });
+      });
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el.firstChild) el.textContent = el.textContent;
+        estados.set(el, { atual: 0, final: el.textContent, raf: 0 });
+        observador.observe(el, { childList: true });
+        animar(el, 0, el.textContent); // contagem inicial a partir de zero
+      });
+
+      // Antes de imprimir/gerar PDF, mostra os valores finais exatos.
+      window.addEventListener("beforeprint", () => {
+        estados.forEach((st, el) => {
+          cancelAnimationFrame(st.raf);
+          st.atual = ler(st.final);
+          if (el.firstChild) el.firstChild.data = st.final;
+        });
       });
     })();
   </script>
