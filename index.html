@@ -295,6 +295,38 @@
     }
     .abas-ano button + button { border-left: 1px solid var(--borda); }
 
+    /* ---------- IRPJ e valor líquido ---------- */
+    .check {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 14px 0 0;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--musgo);
+      cursor: pointer;
+    }
+    .check input {
+      width: 16px; height: 16px;
+      margin: 2px 0 0;
+      padding: 0;
+      accent-color: var(--folha);
+      flex: none;
+    }
+    .dica-irpj { margin: 10px 0 0; font-size: 0.85rem; color: var(--suave); }
+    .irpj-simples { display: none; }
+    body.sem-irpj .irpj-campo,
+    body.sem-irpj .irpj-row { display: none; }
+    body.sem-irpj .irpj-simples { display: block; }
+    body.sem-adicional .irpj-adic { display: none; }
+    .result-row .formula {
+      display: block;
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--musgo);
+      margin-top: 2px;
+    }
+
     /* ---------- Modo comparativo ---------- */
     .so-comparar { display: none; }
     body.modo-comparar .so-comparar { display: block; }
@@ -384,8 +416,17 @@
     .cmp-linha.cmp-forte {
       font-family: var(--serif);
       font-size: 1.05rem;
-      border-bottom: none;
     }
+    .cmp-linha.cmp-liquido {
+      background: var(--limao);
+      color: var(--floresta);
+      border-bottom: none;
+      margin: 8px -24px -22px;
+      padding: 12px 24px;
+    }
+    .compara-box .cmp-linha.cmp-liquido .cmp-item,
+    .compara-box .cmp-linha.cmp-liquido small { color: var(--musgo); }
+    .compara-box .cmp-linha.cmp-liquido .cmp-delta { color: var(--floresta); }
     .cmp-linha.cmp-forte .cmp-item { color: var(--salvia); }
     .cmp-linha.cmp-forte > span:not(.cmp-item) { font-weight: 400; }
     .cmp-delta { color: var(--papel); }
@@ -401,6 +442,7 @@
       .cmp-cabeca .cmp-item { display: none; }
       .cmp-linha > span:not(.cmp-item) { font-size: 0.88rem; }
       .compara-box { padding: 18px 16px; }
+      .cmp-linha.cmp-liquido { margin: 8px -16px -18px; padding: 12px 16px; }
       .cmp-destaque { padding: 12px 14px; }
       .abas-ano button { padding: 10px 6px; font-size: 0.88rem; }
     }
@@ -494,7 +536,22 @@
       body.modo-comparar .subtitle { display: none; }
       body.modo-comparar .print-data { margin-bottom: 6px; }
       body.modo-comparar .resumo { margin-bottom: 10px; }
-      .cmp-linha { padding: 4px 0; }
+      .cmp-linha { padding: 3px 0; }
+      .cmp-linha.cmp-liquido { margin: 6px -18px -12px; padding: 8px 18px; }
+      /* Compactação para caber em uma folha com IRPJ e valor líquido */
+      @page { margin: 10mm 12mm; }
+      .topo { padding: 8px 14px; }
+      .topo img { height: 26px; }
+      .hero { padding: 10px 14px 12px; }
+      .kicker { margin-bottom: 4px; }
+      .subtitle { display: none; }
+      .print-data { margin-bottom: 6px; }
+      .resumo { margin-bottom: 10px; }
+      .resumo td { padding: 2px 0; font-size: 0.8rem; }
+      .result-row { padding: 4px 0; }
+      .result-row .formula { font-size: 0.7rem; }
+      .note { padding: 8px 12px; font-size: 0.75rem; }
+      .print-rodape { margin-top: 8px; }
       .cmp-linha small { display: inline; margin-left: 6px; }
       .print-rodape {
         margin-top: 12px;
@@ -603,6 +660,34 @@
         </div>
       </div>
 
+      <div class="section-title">IRPJ (empresas fora do Simples)</div>
+      <div class="grid">
+        <div class="field">
+          <label for="irpjRegime">Tributação da Empresa</label>
+          <select id="irpjRegime">
+            <option value="presumido" selected>Lucro Presumido</option>
+            <option value="real">Lucro Real (estimativa mensal)</option>
+            <option value="simples">Simples Nacional (IRPJ no DAS)</option>
+          </select>
+        </div>
+
+        <div class="field irpj-campo">
+          <label for="irpjPresuncao">Presunção / Estimativa do Lucro (%)</label>
+          <input type="number" id="irpjPresuncao" value="32.00" step="0.01" min="0" max="100" inputmode="decimal" />
+        </div>
+
+        <div class="field irpj-campo">
+          <label for="irpjAliq">Alíquota IRPJ (%)</label>
+          <input type="number" id="irpjAliq" value="15.00" step="0.01" min="0" inputmode="decimal" />
+        </div>
+      </div>
+      <label class="check irpj-campo" for="irpjAdicional">
+        <input type="checkbox" id="irpjAdicional" />
+        Aplicar adicional de 10% (parcela do lucro acima de R$ 20 mil no mês)
+      </label>
+      <p class="dica-irpj irpj-campo">Base do IRPJ = Valor do Serviço × percentual de presunção (32% para serviços em geral; ajuste conforme a atividade). IRPJ = Base × 15%.</p>
+      <p class="dica-irpj irpj-simples">Optante do Simples Nacional: o IRPJ é recolhido dentro do DAS e não entra neste cálculo.</p>
+
       </div>
 
       <div class="resumo so-print">
@@ -639,9 +724,25 @@
           <span>Valor IBS Municipal <span class="badge" id="badgeIbsMun">0,05%</span>:</span>
           <strong id="resIbsMun">R$ 0,00</strong>
         </div>
-        <div class="result-row highlight total">
+        <div class="result-row highlight">
           <span>Total IBS + CBS Destacado:</span>
           <span id="resTotalReforma">R$ 0,00</span>
+        </div>
+        <div class="result-row irpj-row">
+          <span>Base do IRPJ <span class="badge" id="badgeIrpjPres">32,00%</span>:</span>
+          <strong id="resIrpjBase">R$ 0,00</strong>
+        </div>
+        <div class="result-row irpj-row">
+          <span>IRPJ <span class="badge" id="badgeIrpjAliq">15,00%</span>:</span>
+          <strong id="resIrpj">R$ 0,00</strong>
+        </div>
+        <div class="result-row irpj-row irpj-adic">
+          <span>Adicional IRPJ <span class="badge">10,00%</span>:</span>
+          <strong id="resIrpjAdic">R$ 0,00</strong>
+        </div>
+        <div class="result-row highlight total">
+          <span>Valor Líquido:<small class="formula" id="liqFormula">Base IBS/CBS − IBS/CBS − IRPJ</small></span>
+          <span id="resLiquido">R$ 0,00</span>
         </div>
       </div>
 
@@ -802,6 +903,13 @@
 
       const tituloOriginal = document.title;
 
+      // Texto do parâmetro de IRPJ, usado também no PDF do comparativo
+      window.descreverIrpj = function () {
+        if (val("irpjRegime") === "simples") return "Simples Nacional (IRPJ no DAS, não calculado)";
+        return txtSelect("irpjRegime") + " · presunção " + fmtNum(val("irpjPresuncao")) + "% · IRPJ " +
+          fmtNum(val("irpjAliq")) + "%" + (document.getElementById("irpjAdicional").checked ? " + adicional 10%" : "");
+      };
+
       function montarRelatorio() {
         const agora = new Date();
         document.getElementById("printData").textContent =
@@ -818,6 +926,7 @@
           ["Alíquota CBS", fmtNum(val("aliqCbs")) + "%"],
           ["Alíquota IBS estadual", fmtNum(val("aliqIbsUf")) + "%"],
           ["Alíquota IBS municipal", fmtNum(val("aliqIbsMun")) + "%"],
+          ["Tributação IRPJ", window.descreverIrpj()],
         ];
         const tbody = document.getElementById("printParametros");
         tbody.replaceChildren(...linhas.map(([k, v]) => {
@@ -880,17 +989,45 @@
       const num = (id) => parseFloat(document.getElementById(id).value) || 0;
       let ultimo = null;
 
+      /* ---------- IRPJ (fora do Simples) e valor líquido ---------- */
+      const r2 = (v) => Math.round((v + Number.EPSILON) * 100) / 100;
+      const elIrpjRegime = document.getElementById("irpjRegime");
+      const elIrpjAdic = document.getElementById("irpjAdicional");
+
+      function calcIrpj() {
+        const ativo = elIrpjRegime.value !== "simples";
+        if (!ativo) return { ativo, base: 0, irpj: 0, adic: 0, total: 0, pres: 0, aliq: 0 };
+        const valor = Math.max(0, num("valorServico"));
+        const pres = Math.max(0, num("irpjPresuncao"));
+        const aliq = Math.max(0, num("irpjAliq"));
+        const base = r2(valor * pres / 100);
+        const irpj = r2(base * aliq / 100);
+        const adic = elIrpjAdic.checked ? r2(base * 0.10) : 0;
+        return { ativo, base, irpj, adic, total: r2(irpj + adic), pres, aliq };
+      }
+
+      // Valor líquido = Base de cálculo IBS/CBS − Total IBS/CBS − IRPJ (valores lidos do cálculo original)
+      function calcLiquido(base, totalReforma, irpj) {
+        return r2(base - totalReforma - irpj.total);
+      }
+
       function capturar(ano) {
         selAno.value = ano;
         aplicarCenario(); // função original, sem alteração
+        const base = lerBRL(txt("resBase"));
+        const total = lerBRL(txt("resTotalReforma"));
+        const ir = calcIrpj();
         return {
+          irpj: ir.total,
+          irpjInfo: ir,
+          liquido: calcLiquido(base, total, ir),
           iss: lerBRL(txt("resIss")),
           pisCofins: lerBRL(txt("resPisCofins")),
-          base: lerBRL(txt("resBase")),
+          base: base,
           cbs: lerBRL(txt("resCbs")),
           ibsUf: lerBRL(txt("resIbsUf")),
           ibsMun: lerBRL(txt("resIbsMun")),
-          total: lerBRL(txt("resTotalReforma")),
+          total: total,
           aliq: {
             iss: num("aliqIss"), pis: num("aliqPis"), cofins: num("aliqCofins"),
             cbs: num("aliqCbs"), ibsUf: num("aliqIbsUf"), ibsMun: num("aliqIbsMun"),
@@ -937,12 +1074,17 @@
         { rotulo: "IBS Estadual", chave: "ibsUf", aliq: (x) => pct(x.aliq.ibsUf) },
         { rotulo: "IBS Municipal", chave: "ibsMun", aliq: (x) => pct(x.aliq.ibsMun) },
         { rotulo: "Total IBS + CBS", chave: "total", forte: true },
+        {
+          rotulo: "IRPJ", chave: "irpj", classe: "irpj-row",
+          aliq: (x) => pct(x.irpjInfo.aliq) + " s/ " + pct(x.irpjInfo.pres) + (x.irpjInfo.adic ? " + 10%" : ""),
+        },
+        { rotulo: "Valor líquido", chave: "liquido", forte: true, classe: "cmp-liquido" },
       ];
 
       const corpo = document.getElementById("cmpCorpo");
       const celulas = linhas.map((l) => {
         const row = document.createElement("div");
-        row.className = "cmp-linha" + (l.forte ? " cmp-forte" : "");
+        row.className = "cmp-linha" + (l.forte ? " cmp-forte" : "") + (l.classe ? " " + l.classe : "");
         row.setAttribute("role", "row");
         const item = document.createElement("span");
         item.className = "cmp-item";
@@ -1020,10 +1162,53 @@
         aplicarModo(botao.dataset.valor);
       }
 
-      // Recalcula o comparativo quando muda valor, ISS ou regime
-      document.getElementById("valorServico").addEventListener("input", () => { if (modo === "comparar") comparar(); });
-      document.getElementById("aliqIss").addEventListener("input", () => { if (modo === "comparar") comparar(); });
-      document.getElementById("regime").addEventListener("change", () => { if (modo === "comparar") comparar(); });
+      // Linhas de IRPJ e valor líquido no resultado de um ano só
+      function atualizarExtras() {
+        const ir = calcIrpj();
+        document.body.classList.toggle("sem-irpj", !ir.ativo);
+        document.body.classList.toggle("sem-adicional", !ir.ativo || !elIrpjAdic.checked);
+        document.getElementById("liqFormula").textContent =
+          ir.ativo ? "Base IBS/CBS − IBS/CBS − IRPJ" : "Base IBS/CBS − IBS/CBS";
+        if (modo === "comparar") return;
+        document.getElementById("badgeIrpjPres").textContent = pct(ir.pres);
+        document.getElementById("badgeIrpjAliq").textContent = pct(ir.aliq);
+        setValor(document.getElementById("resIrpjBase"), ir.base, brl);
+        setValor(document.getElementById("resIrpj"), ir.irpj, brl);
+        setValor(document.getElementById("resIrpjAdic"), ir.adic, brl);
+        setValor(
+          document.getElementById("resLiquido"),
+          calcLiquido(lerBRL(txt("resBase")), lerBRL(txt("resTotalReforma")), ir),
+          brl
+        );
+      }
+
+      // Recalcula quando qualquer dado muda. Estes ouvintes são registrados depois dos
+      // originais, então rodam logo após calcular()/aplicarCenario() e leem o valor já atualizado.
+      ["valorServico", "aliqIss", "aliqPis", "aliqCofins", "aliqCbs", "aliqIbsUf", "aliqIbsMun"].forEach((id) =>
+        document.getElementById(id).addEventListener("input", () => {
+          if (modo === "comparar") comparar();
+          atualizarExtras();
+        })
+      );
+      ["irpjPresuncao", "irpjAliq"].forEach((id) =>
+        document.getElementById(id).addEventListener("input", () => {
+          if (modo === "comparar") comparar();
+          atualizarExtras();
+        })
+      );
+      [elIrpjRegime, elIrpjAdic].forEach((el) =>
+        el.addEventListener("change", () => {
+          if (modo === "comparar") comparar();
+          atualizarExtras();
+        })
+      );
+      selAno.addEventListener("change", atualizarExtras);
+      document.getElementById("regime").addEventListener("change", () => {
+        // "Lucro Real (simulação 2026)" no regime CBS/IBS → IRPJ também no Lucro Real
+        if (document.getElementById("regime").value === "real2026") elIrpjRegime.value = "real";
+        if (modo === "comparar") comparar();
+        atualizarExtras();
+      });
 
       // PDF no modo comparativo: parâmetros dos dois anos e valores finais
       window.addEventListener("beforeprint", () => {
@@ -1041,6 +1226,7 @@
           ["Alíquota ISSQN", pct(num("aliqIss"))],
           ["Alíquotas 2026", aliqs(a)],
           ["Alíquotas 2027", aliqs(b)],
+          ["Tributação IRPJ", window.descreverIrpj()],
         ];
         document.getElementById("printParametros").replaceChildren(...rows.map(([k, v]) => {
           const tr = document.createElement("tr");
@@ -1067,6 +1253,7 @@
         });
       });
       marcar(modo);
+      atualizarExtras();
       if (location.hash === "#comparar") aplicarModo("comparar", true);
 
       /* ---------- Animated Number: valores do resultado ---------- */
