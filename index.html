@@ -1095,7 +1095,13 @@
         const n = parseFloat(t.replace(/[^\d,-]/g, "").replace(",", "."));
         return isNaN(n) ? 0 : n;
       };
-      const txt = (id) => document.getElementById(id).textContent;
+      // Lê o valor que a lógica original escreveu. Se o texto na tela é um quadro da
+      // animação (Animated Number), usa o valor final, não o número intermediário.
+      const txt = (id) => {
+        const el = document.getElementById(id);
+        if (el._final !== undefined && el._noAnimado && el.firstChild === el._noAnimado) return el._final;
+        return el.textContent;
+      };
       const num = (id) => parseFloat(document.getElementById(id).value) || 0;
       let ultimo = null;
 
@@ -1600,25 +1606,33 @@
       const DURACAO = 650;
       const estados = new Map();
 
+      // Escrita via nó de texto (characterData) para não disparar o observador.
+      // Guarda o texto do quadro e o valor final para quem precisa ler o resultado
+      // (ex.: valor líquido) não pegar um número no meio da animação.
+      function escrever(el, texto) {
+        el.firstChild.data = texto;
+        el._noAnimado = el.firstChild; // a lógica original troca o nó a cada cálculo; a animação só altera este
+      }
+
       function animar(el, de, textoFinal) {
         const st = estados.get(el);
         const para = ler(textoFinal);
         st.final = textoFinal;
+        el._final = textoFinal;
         cancelAnimationFrame(st.raf);
         if (Math.abs(para - de) < 0.005) {
           st.atual = para;
-          el.firstChild.data = textoFinal;
+          escrever(el, textoFinal);
           return;
         }
         const inicio = performance.now();
         const passo = (agora) => {
           const t = Math.min(1, (agora - inicio) / DURACAO);
           st.atual = de + (para - de) * suavizar(t);
-          // Escrita via nó de texto (characterData) para não disparar o observador.
-          el.firstChild.data = t < 1 ? fmt(st.atual) : textoFinal;
+          escrever(el, t < 1 ? fmt(st.atual) : textoFinal);
           if (t < 1) st.raf = requestAnimationFrame(passo);
         };
-        el.firstChild.data = fmt(de);
+        escrever(el, fmt(de));
         st.raf = requestAnimationFrame(passo);
       }
 
@@ -1644,7 +1658,7 @@
         estados.forEach((st, el) => {
           cancelAnimationFrame(st.raf);
           st.atual = ler(st.final);
-          if (el.firstChild) el.firstChild.data = st.final;
+          if (el.firstChild) escrever(el, st.final);
         });
       });
     })();
