@@ -319,6 +319,81 @@
     body.sem-irpj .irpj-row { display: none; }
     body.sem-irpj .irpj-simples { display: block; }
     body.sem-adicional .irpj-adic { display: none; }
+    body.irpj-cnae .irpj-campo,
+    body.irpj-cnae .irpj-base { display: none; }
+
+    /* ---------- Consulta de CNPJ ---------- */
+    [hidden] { display: none !important; }
+    .cnpj-box {
+      background: var(--areia);
+      border: 1px solid var(--borda);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .cnpj-box label small, .cnpj-cnae label small { font-weight: 400; color: var(--suave); }
+    .cnpj-linha { display: flex; gap: 8px; margin-top: 6px; }
+    .cnpj-linha input { flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
+    .btn-consultar {
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: var(--limao);
+      color: var(--floresta);
+      border: 1px solid var(--limao);
+      border-radius: 0;
+      padding: 0 18px;
+      cursor: pointer;
+      flex: none;
+    }
+    .btn-consultar:hover { background: #b2cc6c; border-color: #b2cc6c; }
+    .btn-consultar:disabled { opacity: .6; cursor: progress; }
+    .btn-consultar:focus-visible, .btn-link:focus-visible { outline: 2px solid var(--folha); outline-offset: 2px; }
+    .cnpj-status { margin: 10px 0 0; font-size: 0.85rem; color: var(--musgo); }
+    .cnpj-status.erro { color: #A23B2A; font-weight: 600; }
+    .cnpj-resultado { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--borda); }
+    .cnpj-empresa { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; }
+    .cnpj-empresa strong { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; }
+    .cnpj-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid var(--folha);
+      color: var(--folha);
+      background: #fff;
+    }
+    .tag.ok { background: #e1eed9; border-color: #2F6B34; color: #2F6B34; }
+    .tag.alerta { background: #f4dfd9; border-color: #A23B2A; color: #A23B2A; }
+    .cnpj-cnae { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .cnae-aliq { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+    .cnae-aliq-pct {
+      font-family: var(--serif);
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--floresta);
+      font-variant-numeric: tabular-nums;
+    }
+    .cnae-aliq-info { font-size: 0.8rem; color: var(--suave); line-height: 1.35; }
+    .btn-link {
+      margin-top: 12px;
+      background: none;
+      border: 0;
+      padding: 0;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      color: var(--folha);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    @media (max-width: 520px) {
+      .cnpj-box { padding: 14px 12px; }
+      .cnpj-linha { flex-wrap: wrap; }
+      .cnpj-linha input { flex: 1 1 100%; }
+      .btn-consultar { flex: 1 1 100%; padding: 10px 12px; }
+      .cnae-aliq-pct { font-size: 1.7rem; }
+    }
     .result-row .formula {
       display: block;
       font-family: var(--sans);
@@ -661,10 +736,41 @@
       </div>
 
       <div class="section-title">IRPJ (empresas fora do Simples)</div>
+
+      <div class="cnpj-box">
+        <label for="cnpj">CNPJ do Prestador <small>(puxa a alíquota de IR pelo CNAE)</small></label>
+        <div class="cnpj-linha">
+          <input type="text" id="cnpj" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" maxlength="18" />
+          <button type="button" class="btn-consultar" id="btnCnpj">Consultar</button>
+        </div>
+        <p class="cnpj-status" id="cnpjStatus" role="status" hidden></p>
+
+        <div class="cnpj-resultado" id="cnpjResultado" hidden>
+          <div class="cnpj-empresa">
+            <strong id="cnpjNome"></strong>
+            <span class="cnpj-tags">
+              <span class="tag" id="cnpjSituacao"></span>
+              <span class="tag" id="cnpjRegimeTag"></span>
+            </span>
+          </div>
+          <div class="cnpj-cnae" id="cnpjCnaeBox">
+            <label for="cnaeSelect">CNAE da Nota <small>(dentre os CNAEs deste CNPJ; vem marcado o principal)</small></label>
+            <select id="cnaeSelect"></select>
+            <div class="cnae-aliq" id="cnaeAliqBox">
+              <span class="cnae-aliq-pct" id="cnaeAliq">—</span>
+              <span class="cnae-aliq-info">Alíquota de IR pelo CNAE<br /><span id="cnaeNatureza"></span></span>
+            </div>
+          </div>
+          <p class="dica-irpj" id="cnpjAviso" hidden></p>
+          <button type="button" class="btn-link" id="btnLimparCnpj">Limpar consulta e informar manualmente</button>
+        </div>
+      </div>
+
       <div class="grid">
         <div class="field">
           <label for="irpjRegime">Tributação da Empresa</label>
           <select id="irpjRegime">
+            <option value="cnae" hidden disabled>Pela tabela do CNAE (consulta CNPJ)</option>
             <option value="presumido" selected>Lucro Presumido</option>
             <option value="real">Lucro Real (estimativa mensal)</option>
             <option value="simples">Simples Nacional (IRPJ no DAS)</option>
@@ -728,12 +834,12 @@
           <span>Total IBS + CBS Destacado:</span>
           <span id="resTotalReforma">R$ 0,00</span>
         </div>
-        <div class="result-row irpj-row">
+        <div class="result-row irpj-row irpj-base">
           <span>Base do IRPJ <span class="badge" id="badgeIrpjPres">32,00%</span>:</span>
           <strong id="resIrpjBase">R$ 0,00</strong>
         </div>
         <div class="result-row irpj-row">
-          <span>IRPJ <span class="badge" id="badgeIrpjAliq">15,00%</span>:</span>
+          <span><span id="lblIrpj">IRPJ</span> <span class="badge" id="badgeIrpjAliq">15,00%</span>:</span>
           <strong id="resIrpj">R$ 0,00</strong>
         </div>
         <div class="result-row irpj-row irpj-adic">
@@ -905,7 +1011,10 @@
 
       // Texto do parâmetro de IRPJ, usado também no PDF do comparativo
       window.descreverIrpj = function () {
-        if (val("irpjRegime") === "simples") return "Simples Nacional (IRPJ no DAS, não calculado)";
+        if (val("irpjRegime") === "simples") {
+          return (window.descreverEmpresa ? window.descreverEmpresa() + " · " : "") + "Simples Nacional (IRPJ no DAS, não calculado)";
+        }
+        if (val("irpjRegime") === "cnae" && window.descreverCnae) return window.descreverCnae();
         return txtSelect("irpjRegime") + " · presunção " + fmtNum(val("irpjPresuncao")) + "% · IRPJ " +
           fmtNum(val("irpjAliq")) + "%" + (document.getElementById("irpjAdicional").checked ? " + adicional 10%" : "");
       };
@@ -952,6 +1061,7 @@
     })();
   </script>
 
+  <script src="cnae-data.js"></script>
   <script>
     // Componentes adaptados do Cult UI (Direction-Aware Tabs e Animated Number).
     // Apenas apresentação: o cálculo continua no script original, intocado.
@@ -998,6 +1108,13 @@
         const ativo = elIrpjRegime.value !== "simples";
         if (!ativo) return { ativo, base: 0, irpj: 0, adic: 0, total: 0, pres: 0, aliq: 0 };
         const valor = Math.max(0, num("valorServico"));
+        if (elIrpjRegime.value === "cnae") {
+          // Alíquota de IR da tabela por CNAE (mesma do IRnotas): IR = valor do serviço × alíquota
+          const row = CNAE_INDEX[document.getElementById("cnaeSelect").value] || null;
+          const aliqCnae = row ? Number(row.aliquota_ir) : 0;
+          const ir = r2(valor * aliqCnae / 100);
+          return { ativo, cnae: row, base: valor, irpj: ir, adic: 0, total: ir, pres: 100, aliq: aliqCnae };
+        }
         const pres = Math.max(0, num("irpjPresuncao"));
         const aliq = Math.max(0, num("irpjAliq"));
         const base = r2(valor * pres / 100);
@@ -1076,7 +1193,9 @@
         { rotulo: "Total IBS + CBS", chave: "total", forte: true },
         {
           rotulo: "IRPJ", chave: "irpj", classe: "irpj-row",
-          aliq: (x) => pct(x.irpjInfo.aliq) + " s/ " + pct(x.irpjInfo.pres) + (x.irpjInfo.adic ? " + 10%" : ""),
+          aliq: (x) => x.irpjInfo.cnae
+            ? pct(x.irpjInfo.aliq) + " (CNAE)"
+            : pct(x.irpjInfo.aliq) + " s/ " + pct(x.irpjInfo.pres) + (x.irpjInfo.adic ? " + 10%" : ""),
         },
         { rotulo: "Valor líquido", chave: "liquido", forte: true, classe: "cmp-liquido" },
       ];
@@ -1165,10 +1284,14 @@
       // Linhas de IRPJ e valor líquido no resultado de um ano só
       function atualizarExtras() {
         const ir = calcIrpj();
+        const porCnae = elIrpjRegime.value === "cnae";
         document.body.classList.toggle("sem-irpj", !ir.ativo);
-        document.body.classList.toggle("sem-adicional", !ir.ativo || !elIrpjAdic.checked);
+        document.body.classList.toggle("irpj-cnae", porCnae);
+        document.body.classList.toggle("sem-adicional", !ir.ativo || porCnae || !elIrpjAdic.checked);
+        document.getElementById("lblIrpj").textContent =
+          porCnae && ir.cnae ? "IR (CNAE " + ir.cnae.cnae + ")" : "IRPJ";
         document.getElementById("liqFormula").textContent =
-          ir.ativo ? "Base IBS/CBS − IBS/CBS − IRPJ" : "Base IBS/CBS − IBS/CBS";
+          !ir.ativo ? "Base IBS/CBS − IBS/CBS" : porCnae ? "Base IBS/CBS − IBS/CBS − IR" : "Base IBS/CBS − IBS/CBS − IRPJ";
         if (modo === "comparar") return;
         document.getElementById("badgeIrpjPres").textContent = pct(ir.pres);
         document.getElementById("badgeIrpjAliq").textContent = pct(ir.aliq);
@@ -1181,6 +1304,212 @@
           brl
         );
       }
+
+      /* ---------- Consulta de CNPJ → alíquota de IR pelo CNAE (tabela do IRnotas) ---------- */
+      const soDigitos = (s) => String(s || "").replace(/\D/g, "");
+      const CNAE_INDEX = {};
+      // CNAE_DATA vem de cnae-data.js (declarado com const: global, mas fora de window)
+      (typeof CNAE_DATA !== "undefined" ? CNAE_DATA : []).forEach((r) => { CNAE_INDEX[soDigitos(r.cnae)] = r; });
+
+      const formatCnpj = (v) => soDigitos(v).slice(0, 14)
+        .replace(/^(\d{2})(\d)/, "$1.$2")
+        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+        .replace(/\.(\d{3})(\d)/, ".$1/$2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+      const formatCnae = (c) => {
+        const d = soDigitos(c).padStart(7, "0");
+        return d.slice(0, 4) + "-" + d.slice(4, 5) + "/" + d.slice(5, 7);
+      };
+      function cnpjValido(c) {
+        c = soDigitos(c);
+        if (c.length !== 14 || /^(\d)\1{13}$/.test(c)) return false;
+        const dv = (base) => {
+          const pesos = base.length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+          const soma = base.split("").reduce((s, n, i) => s + Number(n) * pesos[i], 0);
+          const resto = soma % 11;
+          return resto < 2 ? 0 : 11 - resto;
+        };
+        const d1 = dv(c.slice(0, 12));
+        const d2 = dv(c.slice(0, 12) + d1);
+        return c.slice(12) === "" + d1 + d2;
+      }
+
+      // APIs públicas com fallback (mesmo esquema do IRnotas)
+      const normalizarCnpjWs = (d) => {
+        const est = d.estabelecimento || {};
+        const ativ = est.atividade_principal || {};
+        return {
+          cnpj: est.cnpj,
+          razao_social: d.razao_social,
+          descricao_situacao_cadastral: est.situacao_cadastral,
+          opcao_pelo_simples: !!(d.simples && String(d.simples.simples).toLowerCase() === "sim"),
+          cnae_fiscal: ativ.id,
+          cnae_fiscal_descricao: ativ.descricao,
+          cnaes_secundarios: (est.atividades_secundarias || []).map((a) => ({ codigo: a.id, descricao: a.descricao })),
+        };
+      };
+      const FONTES_CNPJ = [
+        { nome: "BrasilAPI", url: (c) => "https://brasilapi.com.br/api/cnpj/v1/" + c, normalizar: (d) => d },
+        { nome: "Minha Receita", url: (c) => "https://minhareceita.org/" + c, normalizar: (d) => d },
+        { nome: "CNPJ.ws", url: (c) => "https://publica.cnpj.ws/cnpj/" + c, normalizar: normalizarCnpjWs },
+      ];
+      async function buscarCnpj(c) {
+        let naoEncontrado = false;
+        for (const fonte of FONTES_CNPJ) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 10000);
+          try {
+            const resp = await fetch(fonte.url(c), { signal: ctrl.signal });
+            if (resp.status === 404) { naoEncontrado = true; continue; }
+            if (!resp.ok) { console.warn(fonte.nome + ": HTTP " + resp.status); continue; }
+            return fonte.normalizar(await resp.json());
+          } catch (err) {
+            console.warn(fonte.nome + ": " + (err.name === "AbortError" ? "timeout" : err.message));
+          } finally {
+            clearTimeout(timer);
+          }
+        }
+        if (naoEncontrado) throw new Error("CNPJ não encontrado na Receita Federal.");
+        throw new Error("Os serviços de consulta de CNPJ estão indisponíveis no momento. Tente novamente em alguns minutos.");
+      }
+
+      const elCnpj = document.getElementById("cnpj");
+      const elBtnCnpj = document.getElementById("btnCnpj");
+      const elCnpjStatus = document.getElementById("cnpjStatus");
+      const elCnpjRes = document.getElementById("cnpjResultado");
+      const elCnaeSelect = document.getElementById("cnaeSelect");
+      const elCnaeBox = document.getElementById("cnpjCnaeBox");
+      const elCnpjAviso = document.getElementById("cnpjAviso");
+      const optCnae = elIrpjRegime.querySelector('option[value="cnae"]');
+      let empresa = null;
+
+      function statusCnpj(msg, erro) {
+        elCnpjStatus.hidden = !msg;
+        elCnpjStatus.textContent = msg || "";
+        elCnpjStatus.classList.toggle("erro", !!erro);
+      }
+      function aviso(msg) {
+        elCnpjAviso.hidden = !msg;
+        elCnpjAviso.textContent = msg || "";
+      }
+      function liberarOpcaoCnae(sim) {
+        optCnae.disabled = !sim;
+        optCnae.hidden = !sim;
+      }
+      function recalcularTudo() {
+        if (modo === "comparar") comparar();
+        atualizarExtras();
+      }
+
+      function atualizarCnae() {
+        const row = CNAE_INDEX[elCnaeSelect.value];
+        document.getElementById("cnaeAliq").textContent = row ? pct(Number(row.aliquota_ir)) : "—";
+        document.getElementById("cnaeNatureza").textContent = row ? "Natureza do rendimento: " + row.natureza : "";
+      }
+
+      function mostrarEmpresa(d) {
+        const simples = d.opcao_pelo_simples === true;
+        const situacao = d.descricao_situacao_cadastral || "—";
+        empresa = { cnpj: formatCnpj(d.cnpj || elCnpj.value), nome: d.razao_social || "—", simples };
+
+        document.getElementById("cnpjNome").textContent = empresa.nome;
+        const tagSit = document.getElementById("cnpjSituacao");
+        tagSit.textContent = situacao;
+        tagSit.className = "tag " + (String(situacao).toUpperCase().includes("ATIVA") ? "ok" : "alerta");
+        const tagReg = document.getElementById("cnpjRegimeTag");
+        tagReg.textContent = simples ? "Optante do Simples" : "Não optante do Simples";
+        tagReg.className = "tag";
+
+        // CNAE principal + secundários, sem repetir
+        const lista = [];
+        const vistos = new Set();
+        const add = (codigo, descricao) => {
+          const cod = soDigitos(codigo);
+          if (cod && !vistos.has(cod)) { vistos.add(cod); lista.push({ cod, descricao: descricao || "" }); }
+        };
+        if (d.cnae_fiscal) add(d.cnae_fiscal, d.cnae_fiscal_descricao);
+        (d.cnaes_secundarios || []).forEach((c) => add(c.codigo, c.descricao));
+        const principal = d.cnae_fiscal ? soDigitos(d.cnae_fiscal) : null;
+
+        elCnaeSelect.replaceChildren(...lista.map((c, i) => {
+          const row = CNAE_INDEX[c.cod];
+          const o = document.createElement("option");
+          o.value = c.cod;
+          o.disabled = !row;
+          o.textContent = formatCnae(c.cod) + " — " + (row ? row.descricao : c.descricao) +
+            (row ? " (" + pct(Number(row.aliquota_ir)) + ")" : " (não consta na tabela de IR)") +
+            (c.cod === principal ? " · principal" : "");
+          return o;
+        }));
+
+        const temNaTabela = lista.some((c) => CNAE_INDEX[c.cod]);
+        if (simples) {
+          elCnaeBox.hidden = true;
+          liberarOpcaoCnae(false);
+          elIrpjRegime.value = "simples";
+          aviso("Optante do Simples Nacional: o IR segue o regime unificado do Simples (DAS). Não se aplica a tabela de IR por CNAE.");
+        } else if (!temNaTabela) {
+          elCnaeBox.hidden = lista.length === 0;
+          liberarOpcaoCnae(false);
+          if (elIrpjRegime.value === "cnae" || elIrpjRegime.value === "simples") elIrpjRegime.value = "presumido";
+          aviso(lista.length === 0
+            ? "A consulta não retornou CNAE para este CNPJ. Use o cálculo manual abaixo."
+            : "Nenhum CNAE deste CNPJ consta na tabela de IR. Use o cálculo manual abaixo.");
+        } else {
+          elCnaeBox.hidden = false;
+          liberarOpcaoCnae(true);
+          elIrpjRegime.value = "cnae";
+          // Vem marcado o CNAE principal; se ele não estiver na tabela, o primeiro que estiver
+          elCnaeSelect.value = principal && CNAE_INDEX[principal] ? principal : lista.find((c) => CNAE_INDEX[c.cod]).cod;
+          aviso("");
+        }
+        atualizarCnae();
+        elCnpjRes.hidden = false;
+        recalcularTudo();
+      }
+
+      async function consultarCnpj() {
+        const c = soDigitos(elCnpj.value);
+        if (!cnpjValido(c)) { statusCnpj("CNPJ inválido. Confira os números digitados.", true); return; }
+        statusCnpj("Consultando a Receita Federal…");
+        elBtnCnpj.disabled = true;
+        try {
+          const dados = await buscarCnpj(c);
+          statusCnpj("");
+          mostrarEmpresa(dados);
+        } catch (err) {
+          statusCnpj(err.message || "Erro ao consultar o CNPJ.", true);
+        } finally {
+          elBtnCnpj.disabled = false;
+        }
+      }
+
+      function limparCnpj() {
+        empresa = null;
+        elCnpj.value = "";
+        elCnpjRes.hidden = true;
+        elCnaeSelect.replaceChildren();
+        statusCnpj("");
+        aviso("");
+        liberarOpcaoCnae(false);
+        if (elIrpjRegime.value === "cnae") elIrpjRegime.value = "presumido";
+        recalcularTudo();
+        elCnpj.focus();
+      }
+
+      elCnpj.addEventListener("input", () => { elCnpj.value = formatCnpj(elCnpj.value); });
+      elCnpj.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); consultarCnpj(); } });
+      elBtnCnpj.addEventListener("click", consultarCnpj);
+      document.getElementById("btnLimparCnpj").addEventListener("click", limparCnpj);
+      elCnaeSelect.addEventListener("change", () => { atualizarCnae(); recalcularTudo(); });
+
+      // Textos para o PDF
+      window.descreverEmpresa = () => (empresa ? empresa.nome + " (" + empresa.cnpj + ")" : "");
+      window.descreverCnae = () => {
+        const row = CNAE_INDEX[elCnaeSelect.value];
+        return (empresa ? empresa.nome + " (" + empresa.cnpj + ") · " : "") +
+          (row ? "CNAE " + row.cnae + " · IR " + pct(Number(row.aliquota_ir)) + " sobre o valor do serviço" : "CNAE sem alíquota na tabela");
+      };
 
       // Recalcula quando qualquer dado muda. Estes ouvintes são registrados depois dos
       // originais, então rodam logo após calcular()/aplicarCenario() e leem o valor já atualizado.
@@ -1205,7 +1534,9 @@
       selAno.addEventListener("change", atualizarExtras);
       document.getElementById("regime").addEventListener("change", () => {
         // "Lucro Real (simulação 2026)" no regime CBS/IBS → IRPJ também no Lucro Real
-        if (document.getElementById("regime").value === "real2026") elIrpjRegime.value = "real";
+        if (document.getElementById("regime").value === "real2026" && elIrpjRegime.value !== "cnae") {
+          elIrpjRegime.value = "real";
+        }
         if (modo === "comparar") comparar();
         atualizarExtras();
       });
