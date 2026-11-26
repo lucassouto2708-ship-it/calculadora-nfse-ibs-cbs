@@ -255,7 +255,7 @@
     .abas-ano {
       position: relative;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       border: 1px solid var(--floresta);
       background: #fff;
     }
@@ -288,21 +288,132 @@
     .abas-indicador {
       position: absolute;
       top: 0; bottom: 0; left: 0;
-      width: 50%;
+      width: calc(100% / 3);
       background: var(--floresta);
+      transform: translateX(calc(var(--i, 0) * 100%));
       transition: transform .38s cubic-bezier(.22, 1, .36, 1);
     }
-    .abas-ano[data-ativo="1"] .abas-indicador { transform: translateX(100%); }
+    .abas-ano button + button { border-left: 1px solid var(--borda); }
+
+    /* ---------- Modo comparativo ---------- */
+    .so-comparar { display: none; }
+    body.modo-comparar .so-comparar { display: block; }
+    body.modo-comparar .so-ano,
+    body.modo-comparar .results-box,
+    body.modo-comparar #notaRodape { display: none; }
+
+    .dica-comparar {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--suave);
+    }
+
+    .compara-box {
+      background: var(--floresta);
+      color: var(--papel);
+      padding: 22px 24px;
+      margin-top: 28px;
+    }
+    .compara-box h2 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 1.3rem;
+      margin: 0 0 14px;
+    }
+    .cmp-destaque {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 20px;
+      flex-wrap: wrap;
+      background: var(--limao);
+      color: var(--floresta);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .cmp-rotulo {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .cmp-de-para {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .cmp-delta-grande {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .cmp-linha {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 4px 12px;
+      align-items: baseline;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(244, 242, 234, .16);
+      font-size: 0.92rem;
+    }
+    .cmp-linha > span:not(.cmp-item) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .cmp-linha small {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--salvia);
+    }
+    .cmp-item { color: rgba(244, 242, 234, .85); }
+    .cmp-cabeca {
+      font-size: 0.75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--salvia);
+      border-bottom-color: rgba(244, 242, 234, .4);
+    }
+    .cmp-cabeca > span:not(.cmp-item) { font-weight: 600; color: var(--papel); }
+    .cmp-cabeca small { text-transform: none; letter-spacing: 0; }
+    .cmp-linha.cmp-forte {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      border-bottom: none;
+    }
+    .cmp-linha.cmp-forte .cmp-item { color: var(--salvia); }
+    .cmp-linha.cmp-forte > span:not(.cmp-item) { font-weight: 400; }
+    .cmp-delta { color: var(--papel); }
+    .cmp-delta small { color: var(--salvia); }
+
+    .cmp-notas { margin-top: 20px; }
+    .cmp-notas .note { margin-top: 10px; }
+    .cmp-notas .note:first-child { margin-top: 0; }
+
+    @media (max-width: 600px) {
+      .cmp-linha { grid-template-columns: repeat(3, 1fr); }
+      .cmp-linha .cmp-item { grid-column: 1 / -1; }
+      .cmp-cabeca .cmp-item { display: none; }
+      .cmp-linha > span:not(.cmp-item) { font-size: 0.88rem; }
+      .compara-box { padding: 18px 16px; }
+      .cmp-destaque { padding: 12px 14px; }
+      .abas-ano button { padding: 10px 6px; font-size: 0.88rem; }
+    }
 
     /* Nota troca com deslize na direção da aba escolhida */
-    .note.deslizar-dir { animation: deslizarDir .38s cubic-bezier(.22, 1, .36, 1); }
-    .note.deslizar-esq { animation: deslizarEsq .38s cubic-bezier(.22, 1, .36, 1); }
+    .deslizar-dir { animation: deslizarDir .38s cubic-bezier(.22, 1, .36, 1); }
+    .deslizar-esq { animation: deslizarEsq .38s cubic-bezier(.22, 1, .36, 1); }
     @keyframes deslizarDir { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
     @keyframes deslizarEsq { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
 
     @media (prefers-reduced-motion: reduce) {
       .abas-indicador, .abas-ano button, .abas-ano button small { transition: none; }
-      .note.deslizar-dir, .note.deslizar-esq { animation: none; }
+      .deslizar-dir, .deslizar-esq { animation: none; }
     }
 
     /* ---------- Ações / PDF ---------- */
@@ -368,6 +479,23 @@
       .result-row.highlight { padding-top: 8px; }
       .result-row.total { margin: 8px -18px -12px; padding: 10px 18px; }
       .note { margin-top: 12px; padding: 10px 14px; break-inside: avoid; }
+      .deslizar-dir, .deslizar-esq { animation: none !important; }
+      .compara-box { margin-top: 0; padding: 12px 18px; break-inside: avoid; }
+      .compara-box h2 { font-size: 1.1rem; margin-bottom: 8px; }
+      .cmp-destaque { padding: 10px 14px; margin-bottom: 8px; }
+      .cmp-de-para { font-size: 1.1rem; }
+      .cmp-delta-grande { font-size: 1.35rem; }
+      .cmp-linha { padding: 5px 0; font-size: 0.85rem; }
+      .cmp-linha.cmp-forte { font-size: 0.98rem; }
+      .cmp-notas { margin-top: 10px; }
+      .cmp-notas .note { margin-top: 6px; padding: 7px 12px; font-size: 0.75rem; }
+      body.modo-comparar .resumo td { padding: 2px 0; }
+      body.modo-comparar .hero { padding: 10px 14px 12px; }
+      body.modo-comparar .subtitle { display: none; }
+      body.modo-comparar .print-data { margin-bottom: 6px; }
+      body.modo-comparar .resumo { margin-bottom: 10px; }
+      .cmp-linha { padding: 4px 0; }
+      .cmp-linha small { display: inline; margin-left: 6px; }
       .print-rodape {
         margin-top: 12px;
         padding-top: 8px;
@@ -411,7 +539,8 @@
         <div class="abas-ano" role="radiogroup" aria-labelledby="rotuloAno">
           <span class="abas-indicador" aria-hidden="true"></span>
           <button type="button" role="radio" data-valor="2027">2027 em diante <small>Sem PIS/COFINS</small></button>
-          <button type="button" role="radio" data-valor="2026">2026 <small>Ano-teste com PIS/COFINS</small></button>
+          <button type="button" role="radio" data-valor="2026">2026 <small>Ano-teste</small></button>
+          <button type="button" role="radio" data-valor="comparar">Comparar <small>2026 × 2027</small></button>
         </div>
         <select id="ano" class="sr-only" tabindex="-1" aria-hidden="true">
           <option value="2027" selected>2027 em diante (Sem PIS/COFINS)</option>
@@ -443,19 +572,21 @@
           <input type="number" id="aliqIss" value="5.00" step="0.01" min="0" max="5" inputmode="decimal" />
         </div>
 
-        <div class="field">
+        <div class="field so-ano">
           <label for="aliqPis">Alíquota PIS Próprio (%)</label>
           <input type="number" id="aliqPis" value="0.00" step="0.01" min="0" inputmode="decimal" disabled />
         </div>
 
-        <div class="field">
+        <div class="field so-ano">
           <label for="aliqCofins">Alíquota COFINS Própria (%)</label>
           <input type="number" id="aliqCofins" value="0.00" step="0.01" min="0" inputmode="decimal" disabled />
         </div>
       </div>
 
-      <div class="section-title">Alíquotas Reforma Tributária</div>
-      <div class="grid">
+      <p class="dica-comparar so-comparar">No comparativo, PIS/COFINS, CBS e IBS usam as alíquotas de referência de cada ano, conforme o regime escolhido. As alíquotas aplicadas aparecem na tabela abaixo.</p>
+
+      <div class="section-title so-ano">Alíquotas Reforma Tributária</div>
+      <div class="grid so-ano">
         <div class="field">
           <label for="aliqCbs">Alíquota CBS (%)</label>
           <input type="number" id="aliqCbs" value="11.20" step="0.01" min="0" inputmode="decimal" />
@@ -515,6 +646,28 @@
       </div>
 
       <p class="note" id="notaRodape"></p>
+
+      <div class="compara-box so-comparar" id="comparaBox" aria-live="polite">
+        <h2>Comparativo 2026 × 2027</h2>
+        <div class="cmp-destaque">
+          <div>
+            <span class="cmp-rotulo">Total IBS + CBS</span>
+            <span class="cmp-de-para"><span id="cmpTotDe">R$ 0,00</span> → <span id="cmpTotPara">R$ 0,00</span></span>
+          </div>
+          <div class="cmp-delta-grande" id="cmpTotDelta">+R$ 0,00</div>
+        </div>
+        <div class="cmp-tabela" role="table" aria-label="Comparativo 2026 e 2027">
+          <div class="cmp-linha cmp-cabeca" role="row">
+            <span role="columnheader" class="cmp-item">Item</span>
+            <span role="columnheader">2026 <small>Ano-teste</small></span>
+            <span role="columnheader">2027 <small>em diante</small></span>
+            <span role="columnheader">Variação</span>
+          </div>
+          <div id="cmpCorpo"></div>
+        </div>
+      </div>
+
+      <div class="cmp-notas so-comparar" id="cmpNotas"></div>
 
       <div class="acoes">
         <button type="button" class="btn-pdf" id="btnPdf">
@@ -647,7 +800,7 @@
       };
       const val = (id) => document.getElementById(id).value;
 
-      let tituloOriginal = document.title;
+      const tituloOriginal = document.title;
 
       function montarRelatorio() {
         const agora = new Date();
@@ -677,7 +830,6 @@
           return tr;
         }));
 
-        tituloOriginal = document.title;
         const d = agora.toISOString().slice(0, 10);
         document.title = "Calculo-NFSe-" + val("ano") + "-" + d;
       }
@@ -703,29 +855,204 @@
       const botoes = Array.from(abas.querySelectorAll("button"));
       const nota = document.getElementById("notaRodape");
 
+      const cmpBox = document.getElementById("comparaBox");
+      let modo = selAno.value; // "2027" | "2026" | "comparar"
+
       function marcar(valor) {
         botoes.forEach((b, i) => {
           const ativo = b.dataset.valor === valor;
           b.setAttribute("aria-checked", ativo ? "true" : "false");
           b.tabIndex = ativo ? 0 : -1;
-          if (ativo) abas.dataset.ativo = String(i);
+          if (ativo) abas.style.setProperty("--i", i);
         });
       }
 
-      function escolher(botao) {
-        const valor = botao.dataset.valor;
-        if (valor === selAno.value) return;
-        const de = botoes.findIndex((b) => b.dataset.valor === selAno.value);
-        const para = botoes.indexOf(botao);
-        selAno.value = valor;
+      /* ---------- Comparativo 2026 × 2027 ---------- */
+      // Usa a lógica original (aplicarCenario/calcular) para cada ano e lê o resultado dela.
+      const brl = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const pct = (v, casas = 2) =>
+        v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas }) + "%";
+      const lerBRL = (t) => {
+        const n = parseFloat(t.replace(/[^\d,-]/g, "").replace(",", "."));
+        return isNaN(n) ? 0 : n;
+      };
+      const txt = (id) => document.getElementById(id).textContent;
+      const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+      let ultimo = null;
+
+      function capturar(ano) {
+        selAno.value = ano;
+        aplicarCenario(); // função original, sem alteração
+        return {
+          iss: lerBRL(txt("resIss")),
+          pisCofins: lerBRL(txt("resPisCofins")),
+          base: lerBRL(txt("resBase")),
+          cbs: lerBRL(txt("resCbs")),
+          ibsUf: lerBRL(txt("resIbsUf")),
+          ibsMun: lerBRL(txt("resIbsMun")),
+          total: lerBRL(txt("resTotalReforma")),
+          aliq: {
+            iss: num("aliqIss"), pis: num("aliqPis"), cofins: num("aliqCofins"),
+            cbs: num("aliqCbs"), ibsUf: num("aliqIbsUf"), ibsMun: num("aliqIbsMun"),
+          },
+          nota: nota.innerHTML,
+        };
+      }
+
+      // Animated Number também nos valores do comparativo
+      const animados = new Set();
+      function setValor(el, valor, formato) {
+        cancelAnimationFrame(el._raf);
+        const de = typeof el._v === "number" ? el._v : 0;
+        el._v = valor;
+        el._final = formato(valor);
+        animados.add(el);
+        if (reduzMovimento || Math.abs(valor - de) < 0.005) { el.textContent = el._final; return; }
+        const inicio = performance.now();
+        const passo = (agora) => {
+          const t = Math.min(1, (agora - inicio) / 650);
+          const atual = de + (valor - de) * (1 - Math.pow(1 - t, 4));
+          el.textContent = t < 1 ? formato(atual) : el._final;
+          if (t < 1) el._raf = requestAnimationFrame(passo);
+        };
+        el._raf = requestAnimationFrame(passo);
+      }
+
+      const delta = (v) => {
+        const r = Math.round(v * 100) / 100;
+        return (r > 0 ? "+" : r < 0 ? "−" : "") + brl(Math.abs(r));
+      };
+      const deltaPct = (a, b) => {
+        if (Math.abs(b - a) < 0.005) return "sem variação";
+        if (Math.abs(a) < 0.005) return Math.abs(b) < 0.005 ? "sem variação" : "novo";
+        const p = ((b - a) / a) * 100;
+        return (p > 0 ? "+" : p < 0 ? "−" : "") + pct(Math.abs(p), 1);
+      };
+
+      const linhas = [
+        { rotulo: "ISSQN destacado", chave: "iss", aliq: (x) => pct(x.aliq.iss) },
+        { rotulo: "PIS + COFINS deduzidos", chave: "pisCofins", aliq: (x) => pct(x.aliq.pis + x.aliq.cofins) },
+        { rotulo: "Base de cálculo IBS/CBS", chave: "base" },
+        { rotulo: "CBS", chave: "cbs", aliq: (x) => pct(x.aliq.cbs) },
+        { rotulo: "IBS Estadual", chave: "ibsUf", aliq: (x) => pct(x.aliq.ibsUf) },
+        { rotulo: "IBS Municipal", chave: "ibsMun", aliq: (x) => pct(x.aliq.ibsMun) },
+        { rotulo: "Total IBS + CBS", chave: "total", forte: true },
+      ];
+
+      const corpo = document.getElementById("cmpCorpo");
+      const celulas = linhas.map((l) => {
+        const row = document.createElement("div");
+        row.className = "cmp-linha" + (l.forte ? " cmp-forte" : "");
+        row.setAttribute("role", "row");
+        const item = document.createElement("span");
+        item.className = "cmp-item";
+        item.setAttribute("role", "rowheader");
+        item.textContent = l.rotulo;
+        const mk = (extra) => {
+          const s = document.createElement("span");
+          s.setAttribute("role", "cell");
+          if (extra) s.className = extra;
+          const v = document.createElement("span");
+          const sm = document.createElement("small");
+          s.append(v, sm);
+          row.append(s);
+          return { v, sm };
+        };
+        row.append(item);
+        const c = { a: mk(), b: mk(), d: mk("cmp-delta") };
+        corpo.append(row);
+        return c;
+      });
+
+      function comparar() {
+        const a = capturar("2026");
+        const b = capturar("2027");
+        ultimo = { a, b };
+
+        linhas.forEach((l, i) => {
+          const c = celulas[i];
+          setValor(c.a.v, a[l.chave], brl);
+          setValor(c.b.v, b[l.chave], brl);
+          setValor(c.d.v, b[l.chave] - a[l.chave], delta);
+          c.a.sm.textContent = l.aliq ? l.aliq(a) : "";
+          c.b.sm.textContent = l.aliq ? l.aliq(b) : "";
+          c.d.sm.textContent = deltaPct(a[l.chave], b[l.chave]);
+        });
+
+        setValor(document.getElementById("cmpTotDe"), a.total, brl);
+        setValor(document.getElementById("cmpTotPara"), b.total, brl);
+        setValor(document.getElementById("cmpTotDelta"), b.total - a.total, delta);
+
+        const notas = document.getElementById("cmpNotas");
+        notas.replaceChildren(...[a.nota, b.nota].map((html) => {
+          const p = document.createElement("p");
+          p.className = "note";
+          p.innerHTML = html; // textos fixos definidos pela lógica original
+          return p;
+        }));
+      }
+
+      function aplicarModo(valor, semAnimacao) {
+        const de = botoes.findIndex((b) => b.dataset.valor === modo);
+        const para = botoes.findIndex((b) => b.dataset.valor === valor);
+        modo = valor;
         marcar(valor);
-        selAno.dispatchEvent(new Event("change"));
-        if (!reduzMovimento) {
-          nota.classList.remove("deslizar-dir", "deslizar-esq");
-          void nota.offsetWidth;
-          nota.classList.add(para > de ? "deslizar-dir" : "deslizar-esq");
+        document.body.classList.toggle("modo-comparar", valor === "comparar");
+        if (valor === "comparar") {
+          comparar();
+        } else {
+          selAno.value = valor;
+          selAno.dispatchEvent(new Event("change"));
+        }
+        try {
+          history.replaceState(null, "", valor === "comparar" ? "#comparar" : location.pathname + location.search);
+        } catch (e) { /* ignora */ }
+        if (!reduzMovimento && !semAnimacao && de !== -1) {
+          const alvo = valor === "comparar" ? cmpBox : nota;
+          alvo.classList.remove("deslizar-dir", "deslizar-esq");
+          void alvo.offsetWidth;
+          alvo.classList.add(para > de ? "deslizar-dir" : "deslizar-esq");
         }
       }
+
+      function escolher(botao) {
+        if (botao.dataset.valor === modo) return;
+        aplicarModo(botao.dataset.valor);
+      }
+
+      // Recalcula o comparativo quando muda valor, ISS ou regime
+      document.getElementById("valorServico").addEventListener("input", () => { if (modo === "comparar") comparar(); });
+      document.getElementById("aliqIss").addEventListener("input", () => { if (modo === "comparar") comparar(); });
+      document.getElementById("regime").addEventListener("change", () => { if (modo === "comparar") comparar(); });
+
+      // PDF no modo comparativo: parâmetros dos dois anos e valores finais
+      window.addEventListener("beforeprint", () => {
+        animados.forEach((el) => { cancelAnimationFrame(el._raf); el.textContent = el._final; });
+        if (modo !== "comparar" || !ultimo) return;
+        const { a, b } = ultimo;
+        const s = document.getElementById("regime");
+        const aliqs = (x) =>
+          "PIS " + pct(x.aliq.pis) + " · COFINS " + pct(x.aliq.cofins) + " · CBS " + pct(x.aliq.cbs) +
+          " · IBS UF " + pct(x.aliq.ibsUf) + " · IBS Mun. " + pct(x.aliq.ibsMun);
+        const rows = [
+          ["Ano de competência", "Comparativo 2026 × 2027"],
+          ["Regime / redução CBS-IBS", s.options[s.selectedIndex].text],
+          ["Valor do serviço", brl(num("valorServico"))],
+          ["Alíquota ISSQN", pct(num("aliqIss"))],
+          ["Alíquotas 2026", aliqs(a)],
+          ["Alíquotas 2027", aliqs(b)],
+        ];
+        document.getElementById("printParametros").replaceChildren(...rows.map(([k, v]) => {
+          const tr = document.createElement("tr");
+          const c1 = document.createElement("td");
+          const c2 = document.createElement("td");
+          c1.textContent = k;
+          c2.textContent = v;
+          tr.append(c1, c2);
+          return tr;
+        }));
+        document.title = "Calculo-NFSe-comparativo-" + new Date().toISOString().slice(0, 10);
+      });
 
       botoes.forEach((b) => {
         b.addEventListener("click", () => escolher(b));
@@ -739,8 +1066,8 @@
           escolher(prox);
         });
       });
-      selAno.addEventListener("change", () => marcar(selAno.value));
-      marcar(selAno.value);
+      marcar(modo);
+      if (location.hash === "#comparar") aplicarModo("comparar", true);
 
       /* ---------- Animated Number: valores do resultado ---------- */
       if (reduzMovimento || !("MutationObserver" in window)) return;
