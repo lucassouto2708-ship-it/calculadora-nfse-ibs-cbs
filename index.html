@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora NFS-e: Transição 2026 e 2027 · AM Santos</title>
   <meta name="description" content="Calculadora de ISSQN, CBS e IBS na NFS-e: compare 2026 (com PIS/COFINS) e 2027 em diante." />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -49,6 +51,7 @@
       gap: 16px;
       flex-wrap: wrap;
     }
+    .topo img { height: 36px; width: auto; display: block; }
     .topo span {
       color: var(--salvia);
       font-size: 12px;
@@ -237,6 +240,7 @@
       font-size: 0.8rem;
       color: var(--suave);
     }
+    footer img { height: 22px; vertical-align: middle; margin-right: 6px; }
 
     /* ---------- Direction-aware tabs (adaptado do Cult UI) ---------- */
     .sr-only {
@@ -576,6 +580,7 @@
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body { background: #fff; font-size: 12px; }
       .topo { padding: 10px 14px; }
+      .topo img { height: 30px; }
       .hero { padding: 16px 14px 18px; }
       h1 { font-size: 1.7rem; margin-bottom: 4px; }
       .subtitle { font-size: 0.85rem; }
@@ -611,6 +616,7 @@
       /* Compactação para caber em uma folha com IRPJ e valor líquido */
       @page { margin: 10mm 12mm; }
       .topo { padding: 8px 14px; }
+      .topo img { height: 26px; }
       .hero { padding: 10px 14px 12px; }
       .kicker { margin-bottom: 4px; }
       .subtitle { display: none; }
@@ -643,6 +649,7 @@
 <body>
   <header class="topo">
     <div class="topo-inner">
+      <img src="img/logo-claro.png" alt="AM Santos Assessoria Tributária" />
       <span>Reforma Tributária</span>
     </div>
   </header>
@@ -881,7 +888,7 @@
   </main>
 
   <footer>
-    AM Santos Assessoria Tributária · Mais arrecadação própria para o seu município.
+    <img src="img/simbolo.png" alt="" />AM Santos Assessoria Tributária · Mais arrecadação própria para o seu município.
   </footer>
 
   <script>
